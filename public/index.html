@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>API 批量检测器</title>
+<style>
+:root{color-scheme:light;--ink:#15263c;--muted:#65758a;--line:#e0e7ef;--blue:#245bf2;--bg:#f4f7fb}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.6 "Segoe UI","Microsoft YaHei",sans-serif}main{max-width:1320px;margin:auto;padding:38px 28px 60px}.top{display:flex;align-items:center;justify-content:space-between;gap:20px}h1{font-size:30px;letter-spacing:-1px;margin:0}h2{font-size:17px;margin:0}.subtitle{color:var(--muted);margin:6px 0 24px}.local{background:#e5f5ed;color:#187449;padding:7px 13px;border-radius:20px;font-weight:600;white-space:nowrap}.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:24px;box-shadow:0 4px 18px #14244404}.notice{padding:12px 15px;background:#fff8e8;color:#785510;border:1px solid #f2e4bf;border-radius:9px;margin:16px 0;font-size:13px}.inputtitle{display:flex;justify-content:space-between;gap:12px;margin-bottom:10px}.small{font-size:12px;color:var(--muted)}textarea{display:block;resize:vertical;min-height:174px;width:100%;border:1px solid #cdd7e3;border-radius:9px;padding:14px;background:#fbfcfe;color:var(--ink);font:13px/1.8 Consolas,monospace}textarea.masked{-webkit-text-security:disc}input,select{width:100%;height:39px;border:1px solid #cdd7e3;border-radius:7px;background:#fff;color:var(--ink);padding:8px;font:inherit}input[type=checkbox]{width:15px;height:15px;vertical-align:middle;margin:0 6px 2px 0}label{display:block;font-size:12px;font-weight:600;color:var(--muted)}label input,label select{margin-top:5px}.options{display:grid;grid-template-columns:2fr 1.3fr .7fr .7fr;gap:16px;margin-top:18px}.actions{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin-top:20px}button{border:1px solid #d4ddea;background:white;border-radius:8px;padding:9px 16px;color:var(--ink);font-family:inherit;font-size:13px;font-weight:600;line-height:1.5;cursor:pointer}button.primary{background:var(--blue);border-color:var(--blue);color:white}button:disabled{opacity:.45;cursor:not-allowed}button:hover:not(:disabled){filter:brightness(.96)}button.link{border:0;padding:2px 8px;color:var(--blue);background:none;font-size:12px}.status{margin-left:auto;color:var(--muted);font-size:13px}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin:22px 0}.stat{padding:15px 20px}.stat strong{display:block;font-size:28px;line-height:1.4}.stat span{color:var(--muted);font-size:12px}.green{color:#138054}.red{color:#be4349}.amber{color:#a17515}.toolbar{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:15px}.toolbar select{width:auto;height:36px}.tablewrap{overflow:auto}table{border-collapse:collapse;width:100%;font-size:12px}th{text-align:left;color:var(--muted);font-size:11px;padding:10px;background:#f6f8fc;white-space:nowrap}td{padding:13px 10px;border-bottom:1px solid #edf1f6;vertical-align:top;max-width:280px;overflow-wrap:anywhere}.badge{display:inline-block;padding:3px 8px;border-radius:5px;background:#fff3dc;color:#986910;white-space:nowrap}.badge.good{background:#e4f5ec;color:#147443}.badge.bad{background:#fdeced;color:#b73a49}.mono{font-family:Consolas,monospace}.detail{min-width:190px;max-width:350px}.empty{text-align:center;padding:45px;color:#8895a6}details{margin-top:5px;color:var(--muted)}summary{cursor:pointer;color:var(--blue)}.progress{height:4px;border-radius:4px;background:#e7ecf5;margin-top:18px;overflow:hidden}.progress div{height:100%;background:var(--blue);width:0;transition:width .2s}.foot{font-size:12px;color:var(--muted);margin-top:16px}.options input:focus,textarea:focus,select:focus{outline:2px solid #b6c9ff;border-color:var(--blue)}@media(max-width:760px){main{padding:22px 14px}.card{padding:17px}.top{align-items:start}h1{font-size:24px}.local{font-size:11px}.options{grid-template-columns:1fr 1fr}.stats{gap:8px}.stat{padding:12px}.stat strong{font-size:24px}.status{width:100%;margin:0}.inputtitle{flex-wrap:wrap}}
+</style>
+</head>
+<body><main>
+<div class="top"><h1>API 批量检测器</h1><span class="local">● 本机运行 · 密钥不落盘</span></div>
+<p class="subtitle">批量验证 Base URL 与 API Key，实际调用成功才标记「可用」。</p>
+<section class="card">
+<div class="inputtitle"><h2>输入接口与密钥</h2><span><span class="small">每行一组 · 最多 500 组 · 自动去重</span><button class="link" id="toggle">隐藏输入</button></span></div>
+<textarea id="source" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="每行一组 baseurl 和 apikey" placeholder="baseurl:https://api.example.com/v1;apikey:sk-你的密钥&#10;baseurl:https://other.example.com/v1;apikey:sk-另一组密钥"></textarea>
+<div class="options">
+<label>指定模型（留空则获取列表，最多试 3 个）<input id="model" placeholder="填写平台实际支持的模型名" autocomplete="off" spellcheck="false"></label>
+<label>接口协议<select id="protocol"><option value="auto">自动：Chat → Responses</option><option value="chat">Chat Completions</option><option value="responses">Responses</option></select></label>
+<label>并发组数<input id="concurrency" type="number" min="1" max="10" value="3"></label>
+<label>单请求超时 / 秒<input id="timeout" type="number" min="3" max="120" value="20"></label>
+</div>
+<div class="notice">检测会向你填写的服务商发送密钥与极短测试请求，可能产生少量费用。仅检测你有权使用的密钥；请确认域名可信，不要把真实密钥发给陌生地址。</div>
+<label><input type="checkbox" id="allowHttp">允许 HTTP 明文传输（仅限你信任的本地或内网接口）</label>
+<div class="actions"><button class="primary" id="start">开始批量验证</button><button id="stop" disabled>停止</button><button id="clear">清空</button><span class="status" id="status" role="status" aria-live="polite">等待输入</span></div>
+<div class="progress"><div id="bar"></div></div>
+</section>
+<div class="stats"><div class="card stat"><strong id="countAll">0</strong><span>已检测</span></div><div class="card stat"><strong class="green" id="countGood">0</strong><span>实际可用</span></div><div class="card stat"><strong class="red" id="countBad">0</strong><span>本次失败</span></div><div class="card stat"><strong class="amber" id="countOther">0</strong><span>待确认 / 输入有误</span></div></div>
+<section class="card">
+<div class="toolbar"><h2>检测结果 <span class="small">可用项优先</span></h2><div><select id="filter" aria-label="筛选结果"><option value="all">全部结果</option><option value="usable">只看可用</option><option value="other">非可用项</option></select> <button id="copy" disabled>复制可用项（含完整密钥）</button> <button id="csv" disabled>导出脱敏 CSV</button></div></div>
+<div class="tablewrap"><table><thead><tr><th>行号</th><th>Base URL / 密钥</th><th>结果</th><th>模型 / 接口</th><th>总耗时</th><th>说明</th></tr></thead><tbody id="rows"><tr><td colspan="6" class="empty">粘贴接口和密钥，点击「开始批量验证」</td></tr></tbody></table></div>
+</section>
+<p class="foot">不会上传到独立的检测平台，不使用浏览器本地存储。密钥仅在当前页面与本地进程内存中处理，并发送至对应 Base URL；不跟随重定向、不关闭 TLS 证书校验。结果只代表当前网络、时间与所测模型，不能证明服务商确实运行了所宣称的模型。关闭页面后仍可在终端按 Ctrl+C 退出服务。</p>
+</main>
+<script nonce="__TOKEN__">
+const $ = id => document.getElementById(id);
+const labels = { usable:'可用', auth_failed:'鉴权失败', forbidden:'权限不足', quota:'额度 / 余额不足', rate_limited:'限流', timeout:'超时', network_error:'网络异常', server_error:'服务端异常', not_supported:'接口 / 模型不支持', request_failed:'请求失败', invalid_response:'响应不兼容', redirect:'重定向已拦截', unverified:'未确认可用', invalid_input:'输入有误', cancelled:'已取消', internal_error:'检测异常' };
+let results = [], total = 0, duplicateCount = 0, controller = null, sourceLines = [];
+const other = r => ['unverified','invalid_input','cancelled'].includes(r.status);
+function cell(text, className='') { const td=document.createElement('td'); td.textContent=text ?? '—'; td.className=className; return td; }
+function render() {
+  const good=results.filter(r=>r.status==='usable').length;
+  const uncertain=results.filter(other).length;
+  $('countAll').textContent=results.length; $('countGood').textContent=good; $('countOther').textContent=uncertain; $('countBad').textContent=results.length-good-uncertain;
+  $('bar').style.width=(total?Math.min(100,results.length/total*100):0)+'%';
+  $('copy').disabled=!good; $('csv').disabled=!results.length;
+  const visible=results.filter(r=>$('filter').value==='all'||($('filter').value==='usable'?r.status==='usable':r.status!=='usable')).sort((a,b)=>(a.status==='usable'?0:1)-(b.status==='usable'?0:1)||a.line-b.line);
+  $('rows').replaceChildren();
+  if(!visible.length) { const tr=document.createElement('tr'),td=cell('暂无符合条件的结果','empty');td.colSpan=6;tr.append(td);$('rows').append(tr); }
+  for(const r of visible) {
+    const tr=document.createElement('tr');tr.append(cell(r.line));
+    const host=cell(r.baseurl||'—','mono'), key=document.createElement('div'); key.className='small';key.textContent=r.key||'';host.append(key);tr.append(host);
+    const state=cell(''),badge=document.createElement('span');badge.className='badge '+(r.status==='usable'?'good':other(r)?'':'bad');badge.textContent=labels[r.status]||r.status;state.append(badge);tr.append(state);
+    const model=cell(r.model||'—','mono'),endpoint=document.createElement('div');endpoint.className='small';endpoint.textContent=r.endpoint||'';model.append(endpoint);tr.append(model);
+    tr.append(cell(r.elapsedMs==null?'—':(r.elapsedMs/1000).toFixed(2)+' s'));
+    const info=cell(r.detail,'detail');
+    if(r.attempts?.length) {const details=document.createElement('details'),summary=document.createElement('summary');summary.textContent=r.attempts.length+' 次请求详情';details.append(summary);for(const a of r.attempts){const line=document.createElement('div');line.textContent=`${a.endpoint} ${a.model||''} · ${a.http||'无 HTTP 状态'} · ${a.status} ${a.detail||''}`;details.append(line);}info.append(details);}
+    tr.append(info);$('rows').append(tr);
+  }
+}
+function running(active) {
+  for(const id of ['start','clear','source','model','protocol','concurrency','timeout','allowHttp']) $(id).disabled=active;
+  $('stop').disabled=!active;
+}
+$('start').onclick=async()=>{
+  if(!$('source').value.trim()){$('status').textContent='请先输入接口与密钥';return;}
+  for(const id of ['concurrency','timeout']) {if(!$(id).reportValidity())return;}
+  results=[]; total=0;duplicateCount=0;sourceLines=$('source').value.split(/\r?\n/);render();running(true);controller=new AbortController();$('status').textContent='正在检测…';
+  let completed=false;
+  try {
+    const res=await fetch('/api/check',{method:'POST',headers:{'Content-Type':'application/json','X-Local-Token':'__TOKEN__'},body:JSON.stringify({text:$('source').value,model:$('model').value,protocol:$('protocol').value,concurrency:Number($('concurrency').value),timeout:Number($('timeout').value),allowHttp:$('allowHttp').checked}),signal:controller.signal});
+    if(!res.ok)throw new Error(await res.text());
+    const reader=res.body.getReader(),decoder=new TextDecoder();let pending='';
+    while(true){const {value,done}=await reader.read();if(done)break;pending+=decoder.decode(value,{stream:true});let at;while((at=pending.indexOf('\n'))>=0){const line=pending.slice(0,at);pending=pending.slice(at+1);if(!line.trim())continue;const event=JSON.parse(line);if(event.type==='start'){total=event.total;duplicateCount=event.duplicates;}if(event.type==='result'){results.push(event.result);render();$('status').textContent=`已检测 ${results.length} / ${total}`;}if(event.type==='done')completed=true;}}
+    if(!completed)throw new Error('连接提前结束，未返回结果的项目尚未验证');
+    $('status').textContent=`完成：${results.filter(r=>r.status==='usable').length} 组可用 / ${total} 组${duplicateCount?'，跳过 '+duplicateCount+' 组重复项':''}`;
+  }catch(error){$('status').textContent=error.name==='AbortError'?`已停止，保留 ${results.length} 条已完成结果；未返回结果的项目未验证。`:'检测中断：'+error.message;}
+  finally{running(false);controller=null;}
+};
+$('stop').onclick=()=>controller?.abort();
+$('clear').onclick=()=>{$('source').value='';sourceLines=[];results=[];total=0;render();$('status').textContent='已清空输入和结果（此前复制的系统剪贴板内容不会被清除）';};
+$('toggle').onclick=()=>{$('source').classList.toggle('masked');$('toggle').textContent=$('source').classList.contains('masked')?'显示输入':'隐藏输入';};
+$('filter').onchange=render;
+$('copy').onclick=async()=>{
+  if(!confirm('将把可用项的完整 API Key 复制到系统剪贴板。剪贴板管理器或同步软件可能保存这些密钥，确定继续吗？'))return;
+  const text=results.filter(r=>r.status==='usable').sort((a,b)=>a.line-b.line).map(r=>sourceLines[r.line-1].trim()).join('\n');
+  try{await navigator.clipboard.writeText(text);$('status').textContent='已复制可用项（含完整密钥），请妥善保管并及时清理剪贴板';}catch{$('status').textContent='浏览器拒绝剪贴板权限，请手动复制输入中对应行';}
+};
+$('csv').onclick=()=>{
+  // Defend spreadsheet users against CSV formula injection from untrusted gateways.
+  const quote=value=>{let text=String(value??'');if(/^[\s]*[=+@-]/.test(text)||/^[\t\r\n]/.test(text))text="'"+text;return '"'+text.replaceAll('"','""')+'"';};
+  const data=[['行号','Base URL','密钥（脱敏）','状态','模型','接口','耗时ms','说明'],...results.map(r=>[r.line,r.baseurl,r.key,labels[r.status]||r.status,r.model,r.endpoint,r.elapsedMs,r.detail])];
+  const blob=new Blob(['\uFEFF'+data.map(row=>row.map(quote).join(',')).join('\r\n')],{type:'text/csv;charset=utf-8'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='api-check-results.csv';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+};
+</script>
+</body></html>
+
